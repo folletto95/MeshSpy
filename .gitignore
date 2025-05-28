@@ -4,3 +4,5 @@ OLD_proto/
 .env
 .git
 .gitignore
+go.*
+internal/
