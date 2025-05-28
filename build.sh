@@ -16,9 +16,8 @@ fi
 IMAGE="${IMAGE:-nicbad/meshspy}"
 TAG="${TAG:-latest}"
 
-# Architetture separate
-ARCH_ARMV6="linux/arm/v6"
-PLATFORMS_PARALLEL="linux/arm/v7,linux/amd64,linux/386,linux/arm64"
+# Ordine di build: prima armv6 e armv7
+PLATFORMS="linux/arm/v6,linux/arm/v7,linux/amd64,linux/386,linux/arm64"
 
 PROTO_REPO="https://github.com/meshtastic/protobufs.git"
 TMP_DIR=".proto_tmp"
@@ -101,30 +100,12 @@ fi
 docker buildx use meshspy-builder
 docker buildx inspect --bootstrap
 
-# 🔨 Build ARMv6 separata (immagine base compatibile)
-echo "🐹 Build ARMv6 con arm32v6/golang:1.22.9-alpine"
+echo "🚀 Build & push multi-platform image for platforms: $PLATFORMS"
 docker buildx build \
-  --platform "$ARCH_ARMV6" \
-  --push \
-  -t "${IMAGE}:${TAG}-armv6" \
-  --build-arg BASE_IMAGE=arm32v6/golang:1.22.9-alpine \
-  .
-
-# 🚀 Build parallela per tutte le altre architetture
-echo "🚀 Build & push multipiattaforma per: $PLATFORMS_PARALLEL"
-docker buildx build \
-  --platform "$PLATFORMS_PARALLEL" \
+  --platform "$PLATFORMS" \
   --push \
   -t "${IMAGE}:${TAG}" \
   --build-arg BASE_IMAGE=golang:1.21-bullseye \
   .
 
-# (Opzionale) 👉 Unione ARMv6 nel manifest principale
-echo "🔗 Creazione manifest multipiattaforma completo (facoltativo)"
-docker manifest create "${IMAGE}:${TAG}" \
-  "${IMAGE}:${TAG}-armv6" \
-  "${IMAGE}:${TAG}"
-
-docker manifest push "${IMAGE}:${TAG}"
-
-echo "✅ Done! Multiarch image ready: ${IMAGE}:${TAG}"
+echo "✅ Done! Multiarch image available at: ${IMAGE}:${TAG}"
