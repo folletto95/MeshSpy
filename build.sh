@@ -15,9 +15,11 @@ fi
 # Parametri
 IMAGE="${IMAGE:-nicbad/meshspy}"
 TAG="${TAG:-latest}"
+GOOS="linux"
 
-# Ordine di build: prima armv6 e armv7
-PLATFORMS="linux/arm/v6,linux/arm/v7,linux/amd64,linux/386,linux/arm64"
+# Architetture separate
+ARCH_ARMV6="linux/arm/v6"
+PLATFORMS_PARALLEL="linux/arm/v7,linux/amd64,linux/386,linux/arm64"
 
 PROTO_REPO="https://github.com/meshtastic/protobufs.git"
 TMP_DIR=".proto_tmp"
@@ -93,6 +95,17 @@ if [[ ! -f go.mod || "$REQUIRES_GO" != "1.21" ]]; then
       go mod tidy"
 fi
 
+# Build multipiattaforma
+declare -A GOARCH=( [armv6]=arm [armv7]=arm [arm64]=arm64 [amd64]=amd64 [386]=386 )
+declare -A GOARM=(  [armv6]=6     [armv7]=7 )
+declare -A MAN_OPTS=(
+    [armv6]="--os linux --arch arm --variant v6"
+  [armv7]="--os linux --arch arm --variant v7"
+  [arm64]="--os linux --arch arm64"
+  [amd64]="--os linux --arch amd64"
+  [386]="--os linux --arch 386"
+)
+
 # Setup buildx
 if ! docker buildx inspect meshspy-builder &>/dev/null; then
   docker buildx create --name meshspy-builder --use
@@ -100,12 +113,30 @@ fi
 docker buildx use meshspy-builder
 docker buildx inspect --bootstrap
 
-echo "🚀 Build & push multi-platform image for platforms: $PLATFORMS"
+# 🔨 Build ARMv6 separata (immagine base compatibile)
+echo "🐹 Build ARMv6 con arm32v6/golang:1.22.9-alpine"
 docker buildx build \
-  --platform "$PLATFORMS" \
+  --platform "$ARCH_ARMV6" \
+  --push \
+  -t "${IMAGE}:${TAG}-armv6" \
+  --build-arg BASE_IMAGE=arm32v6/golang:1.22.9-alpine \
+  .
+
+# 🚀 Build parallela per tutte le altre architetture
+echo "🚀 Build & push multipiattaforma per: $PLATFORMS_PARALLEL"
+docker buildx build \
+  --platform "$PLATFORMS_PARALLEL" \
   --push \
   -t "${IMAGE}:${TAG}" \
   --build-arg BASE_IMAGE=golang:1.21-bullseye \
   .
 
-echo "✅ Done! Multiarch image available at: ${IMAGE}:${TAG}"
+# (Opzionale) 👉 Unione ARMv6 nel manifest principale
+echo "🔗 Creazione manifest multipiattaforma completo (facoltativo)"
+docker manifest create "${IMAGE}:${TAG}" \
+  "${IMAGE}:${TAG}-armv6" \
+  "${IMAGE}:${TAG}"
+
+docker manifest push "${IMAGE}:${TAG}"
+
+echo "✅ Done! Multiarch image ready: ${IMAGE}:${TAG}"
