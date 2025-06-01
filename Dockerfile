@@ -59,6 +59,8 @@ COPY --from=builder /app/meshspy .
 # Copia binario meshtastic-go
 COPY --from=builder /usr/local/bin/meshtastic-go /usr/local/bin/meshtastic-go
 
+COPY proto/ ./proto/
+
 ###########################
 # 🛠️ ENV: Runtime config
 ###########################
