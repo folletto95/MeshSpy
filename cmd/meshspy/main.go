@@ -13,7 +13,9 @@ import (
 
 	"meshspy/config"
 	"meshspy/serial"
-	"meshspy/client"
+	"meshspy/pkg/storage"
+	"meshspy/pkg/mqttclient"
+	"meshspy/proto" // Assicurati sia corretto l'import del pacchetto generato da .proto
 )
 
 func main() {
@@ -26,15 +28,28 @@ func main() {
 
 	log.Println("🚀 MeshSpy avviato con successo! Inizializzazione in corso...")
 
+	// DB
+	db := storage.NewDatabase("data.db")
+
 	// Carica la configurazione dalle variabili d'ambiente
 	cfg := config.Load()
 
-	// Connessione al broker MQTT
-	client, err := mqtt.ConnectMQTT(cfg)
-	if err != nil {
-		log.Fatalf("❌ Errore connessione MQTT: %v", err)
-	}
+	// MQTT con supporto Protobuf
+	client := mqttclient.NewMQTTClient(cfg.MQTTBroker, cfg.ClientID)
 	defer client.Disconnect(250)
+
+	// Subscribe per ricevere dati in protobuf dal topic
+	client.Subscribe("meshspy/nodes", func(data *meshspy.NodeData) {
+		err := db.SaveNodeData(&storage.NodeData{
+			NodeID:      data.NodeId,
+			Timestamp:   time.Unix(data.Timestamp, 0),
+			Temperature: data.Temperature,
+			Humidity:    data.Humidity,
+		})
+		if err != nil {
+			log.Printf("DB insert error: %v", err)
+		}
+	})
 
 	// Inizializza il canale di uscita per la gestione dei segnali di terminazione
 	sigs := make(chan os.Signal, 1)
