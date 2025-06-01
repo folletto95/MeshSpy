@@ -33,6 +33,10 @@ COPY go.mod ./
 COPY go.sum ./
 RUN go mod download
 
+# Aggiunge le dipendenze mancanti
+RUN go get github.com/eclipse/paho.mqtt.golang && \
+    go get google.golang.org/protobuf
+
 # Copia i sorgenti principali
 COPY . .
 
