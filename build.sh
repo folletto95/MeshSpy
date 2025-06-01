@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-# Carica variabili da .env se presente xx
+# Carica variabili da .env se presente
 if [[ -f .env.build ]]; then
   source .env.build
 fi
@@ -24,14 +24,6 @@ PROTO_REPO="https://github.com/meshtastic/protobufs.git"
 TMP_DIR=".proto_tmp"
 PROTO_MAP_FILE=".proto_compile_map.sh"
 rm -f "$PROTO_MAP_FILE"
-
-echo "📦 Compilo proto/data.proto localmente..."
-protoc --go_out=. --go_opt=paths=source_relative proto/data.proto
-
-if [[ ! -f proto/data.pb.go ]]; then
-  echo "❌ ERRORE: File proto/data.pb.go non trovato. Compilazione Protobuf fallita."
-  exit 1
-fi
 
 echo "📥 Recupero tag disponibili da $PROTO_REPO"
 git ls-remote --tags "$PROTO_REPO" | awk '{print $2}' |
