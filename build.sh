@@ -25,6 +25,14 @@ TMP_DIR=".proto_tmp"
 PROTO_MAP_FILE=".proto_compile_map.sh"
 rm -f "$PROTO_MAP_FILE"
 
+echo "📦 Compilo proto/data.proto localmente..."
+protoc --go_out=. --go_opt=paths=source_relative proto/data.proto
+
+if [[ ! -f proto/data.pb.go ]]; then
+  echo "❌ ERRORE: File proto/data.pb.go non trovato. Compilazione Protobuf fallita."
+  exit 1
+fi
+
 echo "📥 Recupero tag disponibili da $PROTO_REPO"
 git ls-remote --tags "$PROTO_REPO" | awk '{print $2}' |
   grep -E '^refs/tags/v[0-9]+\.[0-9]+\.[0-9]+$' | sed 's|refs/tags/||' | sort -V | while read -r PROTO_VERSION; do
