@@ -16,6 +16,7 @@ import (
 	"meshspy/pkg/storage"
 	"meshspy/pkg/mqttclient"
 	"meshspy/proto" // Assicurati sia corretto l'import del pacchetto generato da .proto
+	"meshspy/pkg/meshtastic_info" // ✅ nuovo import al posto di client
 )
 
 func main() {
@@ -63,6 +64,12 @@ func main() {
 	} else {
 		fmt.Printf("ℹ️  Info dispositivo Meshtastic:\n%s\n", output)
 	}
+
+	// 💡 Alternativa futura: usa l'oggetto strutturato
+	// info, err := meshtastic_info.GetLocalNodeInfo(cfg.SerialPort)
+	// if err == nil {
+	//     log.Printf("📡 Nodo %s rilevato con firmware %s", info.ID, info.FirmwareVersion)
+	// }
 
 	// Avvia la lettura dalla porta seriale in un goroutine
 	go func() {

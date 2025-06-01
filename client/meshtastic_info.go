@@ -1,20 +1,16 @@
-package mqtt
+package client
 
 import (
 	"bufio"
 	"bytes"
-	//"log"
+	"fmt"
 	"os/exec"
 	"regexp"
-	"strings"
-	"fmt"
 	"strconv"
-
-	mqtt "github.com/eclipse/paho.mqtt.golang"
-	"meshspy/config"
+	"strings"
 )
 
-// Info rappresenta le informazioni estratte dal dispositivo Meshtastic
+// NodeInfo rappresenta le informazioni estratte dal dispositivo Meshtastic
 type NodeInfo struct {
 	ID                string
 	LongName          string
@@ -53,9 +49,6 @@ var (
 func GetLocalNodeInfo(port string) (*NodeInfo, error) {
 	cmd := exec.Command("/usr/local/bin/meshtastic-go", "--port", port, "info")
 	output, err := cmd.CombinedOutput()
-	//fmt.Printf("📤 Eseguo comando: %s\n", strings.Join(cmd.Args, " "))
-	//fmt.Println("🔍 Output completo di meshtastic-go:\n")
-	//fmt.Println(string(output))
 	if err != nil {
 		fmt.Printf("❌ Errore durante l'esecuzione di meshtastic-go: %v\n", err)
 		return nil, err
@@ -137,22 +130,5 @@ func GetLocalNodeInfo(port string) (*NodeInfo, error) {
 		}
 	}
 
-		return node, nil
-}
-
-// ConnectMQTT crea e restituisce un client MQTT connesso
-func ConnectMQTT(cfg config.Config) (mqtt.Client, error) {
-	opts := mqtt.NewClientOptions().
-		AddBroker(cfg.MQTTBroker).
-		SetClientID(cfg.ClientID)
-
-	if cfg.User != "" {
-		opts.SetUsername(cfg.User)
-		opts.SetPassword(cfg.Password)
-	}
-
-	client := mqtt.NewClient(opts)
-	token := client.Connect()
-	token.Wait()
-	return client, token.Error()
+	return node, nil
 }
