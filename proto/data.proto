@@ -1,0 +1,10 @@
+syntax = "proto3";
+
+package meshspy;
+
+message NodeData {
+  string node_id = 1;
+  int64 timestamp = 2;
+  float temperature = 3;
+  float humidity = 4;
+}
