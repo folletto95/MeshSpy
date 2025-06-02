@@ -71,6 +71,8 @@ if [[ -s "$PROTO_MAP_FILE" ]]; then
       apt-get install -y unzip curl git protobuf-compiler
       go install google.golang.org/protobuf/cmd/protoc-gen-go@v1.30.0
       export PATH=$PATH:$(go env GOPATH)/bin
+      echo "📦 Compilo anche proto/data.proto locale..."
+      protoc --go_out=. --go_opt=paths=source_relative proto/data.proto
       while read -r version; do
         rm -rf proto/$version
         mkdir -p proto/$version
