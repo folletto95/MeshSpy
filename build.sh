@@ -79,6 +79,13 @@ if [[ -s "$PROTO_MAP_FILE" ]]; then
       done < '"$PROTO_MAP_FILE"'
     '
   rm -f "$PROTO_MAP_FILE"
+  # 📦 Compilazione locale del tuo proto personalizzato
+  echo "📦 Compilo localmente proto/data.proto..."
+  protoc --go_out=. --go_opt=paths=source_relative proto/data.proto
+  if [[ ! -f proto/data.pb.go ]]; then
+    echo "❌ Errore: mancata generazione di proto/data.pb.go"
+    exit 1
+  fi
 fi
 
 # Verifica o rigenera go.mod
