@@ -36,6 +36,9 @@ RUN go mod download
 # Copia i sorgenti principali
 COPY . .
 
+# Copia solo il file .proto per sicurezza
+COPY proto/data.proto proto/data.proto
+
 # ✅ Installa protoc-gen-go e compila i file .proto
 RUN go install google.golang.org/protobuf/cmd/protoc-gen-go@v1.30.0
 ENV PATH="${PATH}:/go/bin"
