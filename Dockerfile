@@ -21,9 +21,9 @@ WORKDIR /app
 # 🔁 Installa git condizionalmente (Alpine vs Debian)
 RUN echo "🔧 Installing git depending on base image: ${BASE_IMAGE}" && \
     if command -v apt-get >/dev/null 2>&1; then \
-        apt-get update && apt-get install -y git; \
+        apt-get update && apt-get install -y git protobuf-compiler curl unzip; \
     elif command -v apk >/dev/null 2>&1; then \
-        apk add --no-cache git; \
+        apk add --no-cache git protobuf protoc curl unzip; \
     else \
         echo "❌ Unsupported package manager" && exit 1; \
     fi
@@ -35,6 +35,15 @@ RUN go mod download
 
 # Copia i sorgenti principali
 COPY . .
+
+# ✅ Compila il file .proto in meshspy/proto/local
+RUN go install google.golang.org/protobuf/cmd/protoc-gen-go@v1.30.0 && \
+    export PATH=$PATH:$(go env GOPATH)/bin && \
+    mkdir -p meshspy/proto/local && \
+    protoc --proto_path=proto \
+           --go_out=meshspy/proto/local \
+           --go_opt=paths=source_relative \
+           proto/data.proto
 
 # ✅ COMPILA meshspy
 RUN go build -ldflags="-s -w" -o meshspy ./cmd/meshspy
