@@ -69,16 +69,16 @@ if [[ -s "$PROTO_MAP_FILE" ]]; then
       mkdir -p /tmp/proto-local-copy
       cp proto/data.proto /tmp/proto-local-copy/
       while read -r version; do
-        rm -rf proto/$version
-        mkdir -p proto/$version
+        rm -rf internal/proto/$version
+        mkdir -p internal/proto/$version
         for f in /tmp/proto-$version-copy/*.proto /tmp/proto-$version-copy/meshtastic/*.proto; do
           [[ -f "$f" ]] || continue
           protoc \
             --experimental_allow_proto3_optional \
             -I /tmp/proto-$version-copy \
-            --go_out=proto/$version \
+            --go_out=internal/proto/$version \
             --go_opt=paths=source_relative \
-            --go_opt=Mnanopb.proto=meshspy/proto/$version \
+            --go_opt=Mnanopb.proto=meshspy/internal/proto/$version \
             "$f" || true
         done
       done < '"$PROTO_MAP_FILE"'

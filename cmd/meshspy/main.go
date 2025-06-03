@@ -15,7 +15,7 @@ import (
 	"meshspy/serial"
 	"meshspy/pkg/storage"
 	"meshspy/pkg/mqttclient"
-	"meshspy/proto/local" // Assicurati sia corretto l'import del pacchetto generato da .proto
+	"meshspy/internal/proto/local" // Assicurati sia corretto l'import del pacchetto generato da .proto
 	"meshspy/pkg/meshtastic_info" // ✅ nuovo import al posto di client
 )
 
