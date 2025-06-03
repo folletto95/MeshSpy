@@ -7,7 +7,7 @@ import (
 	mqtt "github.com/eclipse/paho.mqtt.golang"
 	"google.golang.org/protobuf/proto"
 
-	"meshspy/internal/proto/local" // importa correttamente il package
+	"meshspy/proto/local" // importa correttamente il package
 )
 
 type MQTTClient struct {
