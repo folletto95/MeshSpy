@@ -36,10 +36,10 @@ RUN go mod download
 # Copia i sorgenti principali
 COPY . .
 
-# ✅ Compila il file .proto in meshspy/proto/local
-RUN go install google.golang.org/protobuf/cmd/protoc-gen-go@v1.30.0 && \
-    export PATH=$PATH:$(go env GOPATH)/bin && \
-    mkdir -p meshspy/proto/local && \
+# ✅ Installa protoc-gen-go e compila i file .proto
+RUN go install google.golang.org/protobuf/cmd/protoc-gen-go@v1.30.0
+ENV PATH="${PATH}:/go/bin"
+RUN mkdir -p meshspy/proto/local && \
     protoc --proto_path=proto \
            --go_out=meshspy/proto/local \
            --go_opt=paths=source_relative \
